@@ -20,13 +20,13 @@ variable "project_id" {
   default     = "cloudlake-dev-1"
 }
 
-variable "attachment_project_id" {
+variable "psc_attachment_project_id" {
   description = "The ID of the project in which attachment will be provisioned"
   type        = string
   default     = "terraform-cloudbuild"
 }
 
-variable "attachment_project_number" {
+variable "psc_attachment_project_number" {
   description = "The project number in which attachment will be provisioned"
   type        = string
   default     = "805128748265"
@@ -157,26 +157,15 @@ variable "primary_instance" {
     cidr_range       = list(string)
   })
   default = {
-    instance_id  = "default-instance-id" // Good practice to provide defaults
-    display_name = "Default Instance"
-    database_flags = {
-      "log_error_verbosity"         = "default"
-      "log_connections"             = "on"
-      "log_disconnections"          = "on"
-      "log_statement"               = "all"
-      "log_min_messages"            = "warning"
-      "log_min_error_statement"     = "error"
-      "log_min_duration_statement"  = "-1"
-      "password.enforce_complexity" = "on" # Consider if this is *really* needed
-      "alloydb.enable_pgaudit"      = "on"
-      "alloydb.iam_authentication"  = "on"
-    }
+    instance_id        = "default-instance-id" // Good practice to provide defaults
+    display_name       = "Default Instance"
+    database_flags     = {}
     labels             = {}
     annotations        = {}
     gce_zone           = null    //  Use null for optional values
     availability_type  = "ZONAL" // Or "REGIONAL"
     machine_cpu_count  = 2
-    ssl_mode           = "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
+    ssl_mode           = "ENCRYPTED_ONLY"
     require_connectors = false
     query_insights_config = {
       query_string_length     = 1024 // Default
@@ -249,64 +238,6 @@ variable "read_pool_instances" {
     error_message = "availability_type in read_pool_instances must be ZONAL or REGIONAL."
   }
 }
-variable "psc_consumer_address_name" {
-  type        = string
-  description = "The name of the PSC consumer address resource."
-  default     = "psc-consumer-address"
-}
-
-variable "psc_consumer_address_type" {
-  type        = string
-  description = "The address type of the PSC consumer address (e.g., INTERNAL)."
-  default     = "INTERNAL"
-}
-
-variable "psc_fwd_rule_name" {
-  type        = string
-  description = "The name of the PSC forwarding rule resource."
-  default     = "psc-fwd-rule-consumer-endpoint"
-}
-
-variable "psc_fwd_rule_allow_psc_global_access" {
-  type        = bool
-  description = "Whether to allow global access for the PSC forwarding rule."
-  default     = true
-}
-
-variable "psc_consumer_address" {
-  type        = string
-  description = "The IP address of the PSC consumer address."
-  default     = "10.2.0.10"
-}
-
-variable "psc_vpc_name" {
-  type        = string
-  description = "The name of the PSC VPC network."
-  default     = "psc-endpoint-vpc"
-}
-
-variable "psc_subnet_primary_name" {
-  type        = string
-  description = "The name of the primary PSC subnet."
-  default     = "psc-subnet-primary"
-}
-
-variable "psc_subnet_primary_ip_cidr_range" {
-  type        = string
-  description = "The IP CIDR range of the primary PSC subnet."
-  default     = "10.2.0.0/24"
-}
-variable "psc_subnet_secondary_name" {
-  type        = string
-  description = "The name of the secondary PSC subnet."
-  default     = "psc-subnet-secondary"
-}
-variable "psc_subnet_secondary_ip_cidr_range" {
-  type        = string
-  description = "The IP CIDR range of the secondary PSC subnet."
-  default     = "10.3.0.0/24"
-}
-
 variable "key_suffix_length" {
   type        = number
   description = "The length of the random suffix for KMS key and key ring names."
@@ -342,6 +273,7 @@ variable "continuous_backup_enable" {
   description = "Whether to enable continuous backup for the replica cluster."
   default     = true
 }
+
 variable "cluster_id_replica" {
   type        = string
   description = "The ID of the AlloyDB cluster in the east region."
@@ -358,4 +290,8 @@ variable "replica_instance" {
     require_connectors = false
     ssl_mode           = "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
   }
+}
+variable "cluster_depends_on" {
+  type    = any
+  default = []
 }

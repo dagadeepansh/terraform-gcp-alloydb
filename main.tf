@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 module "alloydb_primary" {
   source  = "GoogleCloudPlatform/alloy-db/google"
   version = "~> 3.0"
-
   #cluster_id       = "cluster-${var.region_primary}-psc"
   project_id           = var.project_id
   cluster_location     = var.region_primary
@@ -25,7 +23,7 @@ module "alloydb_primary" {
   cluster_display_name = var.cluster_name
 
   psc_enabled                   = var.psc_enabled
-  psc_allowed_consumer_projects = [var.attachment_project_number]
+  psc_allowed_consumer_projects = [var.psc_attachment_project_number]
 
   cluster_encryption_key_name = google_kms_crypto_key.key_region_primary.id
   automated_backup_policy = {
@@ -50,7 +48,7 @@ module "alloydb_primary" {
     display_name          = var.primary_instance.display_name
     machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
     availability_type     = var.primary_instance.availability_type
-    database_flags        = var.primary_instance.database_flags
+    database_flags        = local.merged_database_flags
     labels                = var.primary_instance.labels
     annotations           = var.primary_instance.annotations
     gce_zone              = var.primary_instance.gce_zone
@@ -59,6 +57,7 @@ module "alloydb_primary" {
     query_insights_config = var.primary_instance.query_insights_config
     enable_public_ip      = var.primary_instance.enable_public_ip
     cidr_range            = var.primary_instance.cidr_range
+    machine_cpu_count     = var.primary_instance.machine_cpu_count
   }
 
   read_pool_instance = [
@@ -75,41 +74,83 @@ module "alloydb_primary" {
       query_insights_config = read_instance.query_insights_config
       enable_public_ip      = read_instance.enable_public_ip
       cidr_range            = read_instance.cidr_range
+      machine_cpu_count     = read_instance.machine_cpu_count
     }
   ]
-
-  cluster_initial_user = {
-    user     = var.cluster_initial_user
-    password = var.cluster_initial_password
-  }
 
   depends_on = [
     google_kms_crypto_key_iam_member.alloydb_sa_iam,
     google_kms_crypto_key.key_region_primary,
   ]
+  cluster_initial_user = {
+    user     = var.cluster_initial_user
+    password = var.cluster_initial_password
+  }
+
 }
 
-# Create psc endpoing using alloydb psc attachment
+locals {
+  default_database_flags = {
+    log_error_verbosity           = "default"
+    log_connections               = "on"
+    log_disconnections            = "on"
+    log_statement                 = "all"
+    log_min_messages              = "warning"
+    log_min_error_statement       = "error"
+    log_min_duration_statement    = "-1"
+    "password.enforce_complexity" = "on" //Important for security
+    "alloydb.enable_pgaudit"      = "on"
+    "alloydb.iam_authentication"  = "on"
+  }
 
-resource "google_compute_address" "psc_consumer_address" {
-  name         = var.psc_consumer_address_name
-  project      = var.attachment_project_id
-  region       = var.region_primary
-  purpose      = "PRIVATE_SERVICE_CONNECT"
-  network      = google_compute_network.psc_vpc.name
-  subnetwork   = google_compute_subnetwork.psc_subnet_primary.id
-  address_type = var.psc_consumer_address_type
-  address      = var.psc_consumer_address
+  merged_database_flags = merge(local.default_database_flags, var.primary_instance.database_flags)
 }
 
-resource "google_compute_forwarding_rule" "psc_fwd_rule_consumer" {
-  name                    = var.psc_fwd_rule_name
-  region                  = var.region_primary
-  project                 = var.attachment_project_id
-  target                  = module.alloydb_primary.primary_instance.psc_instance_config[0].service_attachment_link
-  load_balancing_scheme   = "" # need to override EXTERNAL default when target is a service attachment
-  network                 = google_compute_network.psc_vpc.name
-  ip_address              = google_compute_address.psc_consumer_address.id
-  allow_psc_global_access = var.psc_fwd_rule_allow_psc_global_access
-  subnetwork              = google_compute_subnetwork.psc_subnet_primary.id
+resource "google_project_service_identity" "alloydb_sa" {
+  provider = google-beta
+  project  = var.project_id
+  service  = "alloydb.googleapis.com"
+}
+resource "random_string" "key_suffix" {
+  length  = var.key_suffix_length
+  special = var.key_suffix_special
+  upper   = var.key_suffix_upper
+}
+
+resource "google_kms_key_ring" "keyring_region_primary" {
+  project  = var.project_id
+  name     = "keyring-${var.region_primary}-${random_string.key_suffix.result}"
+  location = var.region_primary
+}
+
+resource "google_kms_crypto_key" "key_region_primary" {
+  name     = "key-${var.region_primary}-${random_string.key_suffix.result}"
+  key_ring = google_kms_key_ring.keyring_region_primary.id
+}
+
+
+resource "google_kms_crypto_key_iam_member" "alloydb_sa_iam" {
+  crypto_key_id = google_kms_crypto_key.key_region_primary.id
+  role          = join(",", var.alloydb_sa_iam_role)
+  member        = "serviceAccount:${google_project_service_identity.alloydb_sa.email}"
+}
+
+
+## Cross Region Secondary Cluster Keys
+
+resource "google_kms_key_ring" "keyring_region_replica" {
+  project  = var.project_id
+  name     = "keyring-${var.region_replica}-${random_string.key_suffix.result}"
+  location = var.region_replica
+}
+
+resource "google_kms_crypto_key" "key_region_replica" {
+  name     = "key-${var.region_replica}-${random_string.key_suffix.result}"
+  key_ring = google_kms_key_ring.keyring_region_replica.id
+}
+
+resource "google_kms_crypto_key_iam_member" "alloydb_sa_iam_secondary" {
+  crypto_key_id = google_kms_crypto_key.key_region_replica.id
+  role          = join(",", var.alloydb_sa_iam_role)
+  member        = "serviceAccount:${google_project_service_identity.alloydb_sa.email}"
 }

@@ -25,7 +25,7 @@ module "alloydb_replica" {
   project_id       = var.project_id
 
   psc_enabled                   = var.psc_enabled
-  psc_allowed_consumer_projects = [var.attachment_project_number]
+  psc_allowed_consumer_projects = [var.psc_attachment_project_number]
 
   cluster_encryption_key_name = google_kms_crypto_key.key_region_replica.id
   primary_instance = {
@@ -42,6 +42,7 @@ module "alloydb_replica" {
     query_insights_config = var.primary_instance.query_insights_config
     enable_public_ip      = var.primary_instance.enable_public_ip
     cidr_range            = var.primary_instance.cidr_range
+    machine_cpu_count     = var.primary_instance.machine_cpu_count
   }
 
   continuous_backup_enable               = var.continuous_backup_enable

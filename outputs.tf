@@ -85,11 +85,6 @@ output "kms_key_name_replica" {
   value       = google_kms_crypto_key.key_region_replica.id
 }
 
-output "psc_consumer_fwd_rule_ip" {
-  description = "Consumer psc endpoint created"
-  value       = google_compute_address.psc_consumer_address.address
-}
-
 output "region_primary" {
   description = "The region for primary cluster"
   value       = var.region_primary
