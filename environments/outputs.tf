@@ -22,45 +22,45 @@ output "project_id" {
 output "cluster_primary" {
   description = "cluster"
   value       = module.alloydb_primary.cluster
-  sensitive   = true // Add this line
+  sensitive = true
 }
 
-output "primary_instance_primary" {
+output "primary_instance_central" {
   description = "primary instance created"
   value       = module.alloydb_primary.primary_instance
 }
 
-output "cluster_id_primary" {
+output "cluster_id_central" {
   description = "ID of the Alloy DB Cluster created"
   value       = module.alloydb_primary.cluster_id
 }
 
-output "primary_instance_id_primary" {
+output "primary_instance_id_central" {
   description = "ID of the primary instance created"
   value       = module.alloydb_primary.primary_instance_id
 }
 
-output "read_instance_ids_primary" {
+output "read_instance_ids_central" {
   description = "IDs of the read instances created"
   value       = module.alloydb_primary.read_instance_ids
 }
 
-output "cluster_name_primary" {
+output "cluster_name_central" {
   description = "The name of the cluster resource"
   value       = module.alloydb_primary.cluster_name
 }
 
-output "primary_psc_attachment_link_primary" {
+output "primary_psc_attachment_link_central" {
   description = "The private service connect (psc) attachment created for primary instance"
   value       = module.alloydb_primary.primary_psc_attachment_link
 }
 
-output "psc_dns_name_primary" {
-  description = "he DNS name of the instance for PSC connectivity. Name convention: ...alloydb-psc.goog"
+output "psc_dns_name_central" {
+  description = "DNS name of the instance for PSC connectivity. Name convention: ...alloydb-psc.goog"
   value       = module.alloydb_primary.primary_instance.psc_instance_config[0].psc_dns_name
 }
 
-output "read_psc_attachment_links_primary" {
+output "read_psc_attachment_links_central" {
   value = module.alloydb_primary.read_psc_attachment_links
 }
 
@@ -69,33 +69,32 @@ output "cluster_replica" {
   value       = module.alloydb_replica.cluster
 }
 
-output "primary_instance_replica" {
+output "primary_instance_east" {
   description = "primary instance created"
   value       = module.alloydb_replica.primary_instance
 }
 
-output "kms_key_name_primary" {
+output "kms_key_name_central" {
   description = "he fully-qualified resource name of the KMS key"
-  value       = google_kms_crypto_key.key_region_primary.id
+  value       = google_kms_crypto_key.key_region_central.id
 }
 
-
-output "kms_key_name_replica" {
+output "kms_key_name_east" {
   description = "he fully-qualified resource name of the Secondary clusterKMS key"
-  value       = google_kms_crypto_key.key_region_replica.id
+  value       = google_kms_crypto_key.key_region_east.id
 }
 
-output "psc_consumer_fwd_rule_ip" {
+/*output "psc_consumer_fwd_rule_ip" {
   description = "Consumer psc endpoint created"
   value       = google_compute_address.psc_consumer_address.address
-}
+}*/
 
-output "region_primary" {
+output "region_central" {
   description = "The region for primary cluster"
-  value       = var.region_primary
+  value       = var.region_central
 }
 
-output "region_replica" {
+output "region_east" {
   description = "The region for cross region replica secondary cluster"
-  value       = var.region_replica
+  value       = var.region_east
 }
