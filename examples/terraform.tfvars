@@ -1,13 +1,13 @@
-project_id                = "cloudlake-dev-1"
+project_id                    = "cloudlake-dev-1"
 psc_attachment_project_id     = "terraform-cloudbuild"
 psc_attachment_project_number = "805128748265"
-region_primary            = "us-central1" # Keeping original value
-region_replica            = "us-east4"    # From your provided values
-cluster_name              = "primary-cluster-psc"
-cluster_id                = "primary-central-cluster-id"
-backup_window             = "1800s"        # Keeping original value
-automated_backup_enabled  = true           # Keeping original value
-cluster_initial_user      = "postgres" # Keeping default from variables.tf
+region_primary                = "us-central1" # Keeping original value
+region_replica                = "us-east4"    # From your provided values
+cluster_name                  = "primary-cluster-psc"
+cluster_id                    = "primary-central-cluster-id"
+backup_window                 = "1800s"    # Keeping original value
+automated_backup_enabled      = true       # Keeping original value
+cluster_initial_user          = "postgres" # Keeping default from variables.tf
 
 # cluster_initial_password is intentionally omitted. Terraform will prompt.
 
@@ -29,13 +29,13 @@ primary_instance = {
   instance_id        = "cluster-primary-central-instance1-psc" # From your provided values
   display_name       = "Primary Instance"                      # Keeping original value
   database_flags     = {}
-  labels             = {}                                # Keeping original value
-  annotations        = {}                                # Keeping original value
-  gce_zone           = null                              # Keeping original value
-  availability_type  = "ZONAL"                           # Keeping original value
-  machine_cpu_count  = 2                                 # Using provided cpu_count = 2
+  labels             = {}               # Keeping original value
+  annotations        = {}               # Keeping original value
+  gce_zone           = null             # Keeping original value
+  availability_type  = "ZONAL"          # Keeping original value
+  machine_cpu_count  = 2                # Using provided cpu_count = 2
   ssl_mode           = "ENCRYPTED_ONLY" # Keeping original value
-  require_connectors = false                             # Keeping original value
+  require_connectors = false            # Keeping original value
   query_insights_config = {
     query_string_length     = 1024  # Keeping original value
     record_application_tags = false # Keeping original value
