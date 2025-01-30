@@ -26,6 +26,7 @@ module "alloydb_primary" {
   psc_allowed_consumer_projects = [var.psc_attachment_project_number]
 
   cluster_encryption_key_name = google_kms_crypto_key.key_region_primary.id
+
   automated_backup_policy = {
     location      = var.region_primary
     backup_window = var.backup_window
@@ -84,7 +85,7 @@ module "alloydb_primary" {
   ]
   cluster_initial_user = {
     user     = var.cluster_initial_user
-    password = var.cluster_initial_password
+    password = google_secret_manager_secret_version.alloydb_secret_version.secret_data
   }
 
 }
@@ -153,4 +154,64 @@ resource "google_kms_crypto_key_iam_member" "alloydb_sa_iam_secondary" {
   crypto_key_id = google_kms_crypto_key.key_region_replica.id
   role          = join(",", var.alloydb_sa_iam_role)
   member        = "serviceAccount:${google_project_service_identity.alloydb_sa.email}"
+}
+
+
+resource "google_alloydb_cluster" "replica_cluster" {
+  count = var.create_replica_cluster ? 1 : 0
+
+  #name = module.alloydb_primary.cluster_name ## Comment this line to promote this cluster as primary cluster
+
+  cluster_id = var.cluster_id_replica
+  location   = var.region_replica
+  project    = var.project_id
+
+  continuous_backup_config {
+    enabled              = var.continuous_backup_enable
+    recovery_window_days = var.continuous_backup_recovery_window_days
+  }
+  encryption_config {
+    kms_key_name = google_kms_crypto_key.key_region_replica.id
+  }
+}
+
+resource "google_alloydb_instance" "replica_instance" {
+  count = var.create_replica_cluster ? 1 : 0
+
+  #cluster          = module.alloydb_primary.replica_cluster[0].name 
+  cluster       = google_alloydb_cluster.replica_cluster[0].name
+  instance_id   = var.replica_instance_id
+  instance_type = "READ_POOL"
+
+  machine_config {
+    cpu_count = var.primary_instance.machine_cpu_count # Take CPU from primary instance variable
+  }
+
+  availability_type = "ZONAL"
+  gce_zone          = var.replica_gce_zone
+
+  depends_on = [
+    module.alloydb_primary,
+    google_kms_crypto_key_iam_member.alloydb_sa_iam_secondary,
+    google_kms_crypto_key.key_region_replica,
+  ]
+}
+
+resource "random_password" "initial_user_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "google_secret_manager_secret" "alloydb_secret" {
+  secret_id = "alloydb-initial-user-password"
+  project   = var.project_id
+  replication {
+    auto {} # Replicate the secret automatically to all regions
+  }
+}
+
+resource "google_secret_manager_secret_version" "alloydb_secret_version" {
+  secret      = google_secret_manager_secret.alloydb_secret.id
+  secret_data = random_password.initial_user_password.result
 }

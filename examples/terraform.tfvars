@@ -94,8 +94,10 @@ alloydb_sa_iam_role      = ["roles/cloudkms.cryptoKeyEncrypterDecrypter"] # Keep
 replica_instance_id      = "cluster-replica-east-instance1-psc"           # From your provided values
 continuous_backup_enable = true                                           # Keeping original value
 cluster_id_replica       = "replica-east-cluster-id"                      # From your provided values
-
+create_replica_cluster   = true
 replica_instance = { # Renamed to avoid conflict
   require_connectors = false
   ssl_mode           = "ENCRYPTED_ONLY"
+  machine_cpu_count  = 2
 }
+psc_vpc_network = "psc-vpc" # Added this

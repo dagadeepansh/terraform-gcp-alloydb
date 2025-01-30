@@ -83,14 +83,9 @@ variable "automated_backup_enabled" {
 variable "cluster_initial_user" {
   type        = string
   description = "The initial user for the cluster."
-  default     = "postgres"
+  default     = "alloydbadmin"
 }
 
-variable "cluster_initial_password" {
-  type        = string
-  description = "The password for the initial user."
-  default     = "postgres123"
-}
 variable "weekly_schedule" {
   type = object({
     days_of_week = list(string)
@@ -284,14 +279,28 @@ variable "replica_instance" {
   type = object({
     require_connectors = bool
     ssl_mode           = string
+    machine_cpu_count  = number
   })
   description = "Replica primary instance configuration."
   default = {
     require_connectors = false
-    ssl_mode           = "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
+    ssl_mode           = "ENCRYPTED_ONLY"
+    machine_cpu_count  = 2
   }
 }
 variable "cluster_depends_on" {
   type    = any
   default = []
+}
+
+variable "replica_gce_zone" {
+  type        = string
+  description = "The zone to place the replica instance."
+  default     = "" // Make sure the user sets it.
+}
+
+variable "create_replica_cluster" {
+  type        = bool
+  description = "Whether to create a cross-region replica cluster."
+  default     = false # Default to NOT creating a replica
 }
