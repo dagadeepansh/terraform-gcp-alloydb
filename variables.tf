@@ -20,6 +20,11 @@ variable "project_id" {
   default     = "cloudlake-dev-1"
 }
 
+variable "secret_id" {
+  description = "The ID of the secret containig DB Password."
+  type        = string
+}
+
 variable "psc_attachment_project_id" {
   description = "The ID of the project in which attachment will be provisioned"
   type        = string

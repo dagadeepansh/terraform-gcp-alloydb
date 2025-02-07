@@ -47,7 +47,7 @@ module "alloydb_primary" {
   primary_instance = {
     instance_id           = var.primary_instance.instance_id
     display_name          = var.primary_instance.display_name
-    machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
+    # machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
     availability_type     = var.primary_instance.availability_type
     database_flags        = local.merged_database_flags
     labels                = var.primary_instance.labels
@@ -204,7 +204,7 @@ resource "random_password" "initial_user_password" {
 }
 
 resource "google_secret_manager_secret" "alloydb_secret" {
-  secret_id = "alloydb-initial-user-password"
+  secret_id = var.secret_id
   project   = var.project_id
   replication {
     auto {} # Replicate the secret automatically to all regions
