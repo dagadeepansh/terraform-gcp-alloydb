@@ -45,8 +45,8 @@ module "alloydb_primary" {
   continuous_backup_encryption_key_name  = google_kms_crypto_key.key_region_primary.id
 
   primary_instance = {
-    instance_id           = var.primary_instance.instance_id
-    display_name          = var.primary_instance.display_name
+    instance_id  = var.primary_instance.instance_id
+    display_name = var.primary_instance.display_name
     # machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
     availability_type     = var.primary_instance.availability_type
     database_flags        = local.merged_database_flags
