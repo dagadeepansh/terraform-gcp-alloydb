@@ -304,3 +304,28 @@ variable "create_replica_cluster" {
   description = "Whether to create a cross-region replica cluster."
   default     = false # Default to NOT creating a replica
 }
+variable "security_cia" {
+  type        = string
+  description = "Represents critical applications to the operations of the organization (cia or non_cia)"
+  validation {
+    condition     = contains(["cia", "non_cia"], var.security_cia)
+    error_message = "The security_cia value must be either 'cia' or 'non_cia'."
+  }
+}
+variable "security_pci" {
+  type        = string
+  description = "Represents whether the system stores or processes payment card holder data (pci or non_pci)"
+  validation {
+    condition     = contains(["pci", "non_pci"], var.security_pci)
+    error_message = "The security_pci value must be either 'pci' or 'non_pci'."
+  }
+}
+
+variable "security_data_confidentiality" {
+  type        = string
+  description = "Represents information type stored or processed by the applications (Registered Confidential, Confidential, Internal, or Public)"
+  validation {
+    condition     = contains(["Registered Confidential", "Confidential", "Internal", "Public"], var.security_data_confidentiality)
+    error_message = "Invalid data confidentiality level.  Must be one of: Registered Confidential, Confidential, Internal, or Public."
+  }
+}

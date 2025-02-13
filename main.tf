@@ -91,6 +91,12 @@ module "alloydb_primary" {
 }
 
 locals {
+  security_labels = {
+    security_cia                  = var.security_cia
+    security_pci                  = var.security_pci
+    security_data_confidentiality = var.security_data_confidentiality
+  }
+  labels = merge(var.primary_instance.labels, local.security_labels)
   default_database_flags = {
     log_error_verbosity           = "default"
     log_connections               = "on"
