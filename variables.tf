@@ -20,6 +20,18 @@ variable "project_id" {
   default     = "cloudlake-dev-1"
 }
 
+variable "cluster_type" {
+  description = "The type of cluster. If not set, defaults to PRIMARY. Default value is PRIMARY. Possible values are: PRIMARY, SECONDARY"
+  type        = string
+  default     = "PRIMARY"
+}
+
+variable "primary_cluster_name" {
+  type        = string
+  description = "Primary cluster name. Required for creating cross region secondary cluster. Not needed for primary cluster"
+  default     = null
+}
+
 variable "psc_attachment_project_id" {
   description = "The ID of the project in which attachment will be provisioned"
   type        = string
@@ -221,7 +233,7 @@ variable "read_pool_instances" {
 
   validation {
     condition = alltrue([
-      for instance in var.read_pool_instances :                                                      // Corrected:  var.read_pool_instances
+      for instance in var.read_pool_instances :                                                      
       contains(["2", "4", "8", "16", "32", "64", "96", "128"], tostring(instance.machine_cpu_count)) // Corrected: instance.machine_cpu_count
     ])
     error_message = "machine_cpu_count in read_pool_instances must be one of [2, 4, 8, 16, 32, 64, 96, 128]"
@@ -299,11 +311,11 @@ variable "replica_gce_zone" {
   default     = "" // Make sure the user sets it.
 }
 
-variable "create_replica_cluster" {
-  type        = bool
-  description = "Whether to create a cross-region replica cluster."
-  default     = false # Default to NOT creating a replica
-}
+# variable "create_replica_cluster" {
+#   type        = bool
+#   description = "Whether to create a cross-region replica cluster."
+#   default     = false # Default to NOT creating a replica
+# }
 variable "security_cia" {
   type        = string
   description = "Represents critical applications to the operations of the organization (cia or non_cia)"
@@ -325,7 +337,13 @@ variable "security_data_confidentiality" {
   type        = string
   description = "Represents information type stored or processed by the applications (Registered Confidential, Confidential, Internal, or Public)"
   validation {
-    condition     = contains(["Registered Confidential", "Confidential", "Internal", "Public"], var.security_data_confidentiality)
+    condition     = contains(["reg-confidential", "confidential", "internal", "public"], var.security_data_confidentiality)
     error_message = "Invalid data confidentiality level.  Must be one of: Registered Confidential, Confidential, Internal, or Public."
   }
+}
+
+variable "secret_id" {
+  description = "The ID of the project in which to provision resources."
+  type        = string
+  default     = "pg_secret"
 }

@@ -30,7 +30,7 @@ output "primary_instance_primary" {
   value       = module.alloydb_primary.primary_instance
 }
 
-output "cluster_id_primary" {
+output "cluster_id" {
   description = "ID of the Alloy DB Cluster created"
   value       = module.alloydb_primary.cluster_id
 }
@@ -45,7 +45,7 @@ output "read_instance_ids_primary" {
   value       = module.alloydb_primary.read_instance_ids
 }
 
-output "cluster_name_primary" {
+output "cluster_name" {
   description = "The name of the cluster resource"
   value       = module.alloydb_primary.cluster_name
 }
@@ -69,21 +69,21 @@ output "read_psc_attachment_links_primary" {
 #   value       = module.alloydb_replica.cluster
 # }
 
-output "cluster_id_replica" {
-  value       = var.create_replica_cluster ? google_alloydb_cluster.replica_cluster[0].cluster_id : null
-  description = "The ID of the replica AlloyDB cluster (if created)."
-  sensitive   = false # Consider if this needs to be sensitive
-}
+# output "cluster_id_replica" {
+#   value       = var.create_replica_cluster ? google_alloydb_cluster.replica_cluster[0].cluster_id : null
+#   description = "The ID of the replica AlloyDB cluster (if created)."
+#   sensitive   = false # Consider if this needs to be sensitive
+# }
 
-output "kms_key_name_primary" {
-  description = "he fully-qualified resource name of the KMS key"
-  value       = google_kms_crypto_key.key_region_primary.id
-}
+# output "kms_key_name_primary" {
+#   description = "he fully-qualified resource name of the KMS key"
+#   value       = google_kms_crypto_key.key_region_primary.id
+# }
 
-output "kms_key_name_replica" {
-  description = "he fully-qualified resource name of the Secondary clusterKMS key"
-  value       = google_kms_crypto_key.key_region_replica.id
-}
+# output "kms_key_name_replica" {
+#   description = "he fully-qualified resource name of the Secondary clusterKMS key"
+#   value       = google_kms_crypto_key.key_region_replica.id
+# }
 
 output "region_primary" {
   description = "The region for primary cluster"
